@@ -1,0 +1,5 @@
+#ignore VSCode automatically created folder
+.vscode
+
+#ignore .swp files
+*.c.swp
