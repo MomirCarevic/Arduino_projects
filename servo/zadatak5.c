@@ -3,13 +3,15 @@
 
 #define TOUCH_PIN 4
 #define SERVO_PIN 9
+#define INTERVAL 1000
 
 Servo servo;
-int pos,stanje;
+int pos,stanje, ugao, sat, minut, sekunda;
 bool touch_old, touch_new, flag;
-unsigned long press_startTime = 0, press_duration = 0;
+unsigned long press_startTime = 0, press_duration = 0,pocetak_sekunde,kraj_sekunde;
 
 int press_button();
+void time();
 
 void setup()
 {
@@ -21,6 +23,7 @@ void setup()
     ugao = 0;
 
     stanje = 1;
+    pocetak_sekunde  = millis();
 
     servo.write(pos);
 }
@@ -31,7 +34,13 @@ void loop()
     {
     case 1: //inicijalno stanje - stoperica je zaustavljena
 
-        Serial.println("STOP - 00:00:00");
+        kraj_sekunde = millis();
+
+        if( kraj_sekunde - pocetak_sekunde >= INTERVAL )
+        {
+            Serial.println("STOP - 00:00:00");
+            pocetak_sekunde = kraj_sekunde;
+        }
 
         if(press_button() && flag == 0 )
         {
@@ -46,6 +55,9 @@ void loop()
             if( press_duration < 500 )
             {
                 stanje = 2;
+                flag = 0;
+                Serial.println("00:00:00");
+                pocetak_sekunde = millis();
                 break;
             }
 
@@ -55,15 +67,59 @@ void loop()
                 break;
             }
 
-            flag = 0;
         }
         break;
     
     case 2: //POCETAK RADA STOPERICE
+
+        kraj_sekunde = millis();
+
+        if(press_button() && flag == 0 )
+        {
+            press_startTime = millis();
+            flag = 1;
+        }
+
+        else if ( digitalRead(TOUCH_PIN) == LOW && flag == 1)
+        {
+            press_duration = millis() - press_startTime;
+
+            if( press_duration > 500 )
+            {
+                stanje = 3;
+                break;
+            }
+        }
+        
+        if( kraj_sekunde-pocetak_sekunde >= INTERVAL && pos < 180)
+        {
+            while ( pos < 180 && ugao < 3 )
+            {
+                servo.write(pos);
+                delay(20);
+                pos ++;
+                ugao ++;
+            }
+            time();
+            pocetak_sekunde = kraj_sekunde-20;
+            ugao = 0;
+        }
+        else if ( pos == 180 )
+        {
+            while( pos > 0 )
+            {
+                servo.write(pos);
+                pos --;
+            }
+            
+        }
+
+
         break;
 
     case 3: //RESET I POVRATAK U INICIJALNO STANJE
         while( pos > 0 )
+        {
             servo.write(pos);
             delay(20);
             pos--;
@@ -89,4 +145,24 @@ int press_button()
     }
 
     return 0;
+}
+
+void time() //ispis vremena 
+{
+    sekunda++;
+
+    if( sekunda > 59 )
+    {
+        minut ++;
+        sekunda = 0;
+    }
+    if( minut > 59 )
+    {
+        sat++;
+        minut = 0;
+    }
+
+    char buffer[9];
+    sprintf(buffer, "%02d:%02d:%02d", sat, minut, sekunda);
+    Serial.println(buffer);
 }
