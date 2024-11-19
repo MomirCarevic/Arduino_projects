@@ -51,7 +51,7 @@ void loop()
                 }
               	
             }
-            if(time_press == 0)time_press = 200;   
+            if(time_press == 0)time_press = INTERVAL;   
         }
         
   
