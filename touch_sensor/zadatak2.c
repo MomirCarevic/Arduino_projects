@@ -61,6 +61,7 @@ void loop()
 
             time_old = time_new;
             reaction_time += time_press;
+            counter++;
 
           	time_press = 0;
           	flag = 0;
