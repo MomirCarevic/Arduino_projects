@@ -18,7 +18,7 @@ void setup()
 
     servo.attach(SERVO_PIN);
     pos = 0;
-    stanje = 3;
+    stanje = 4;
 
     servo.write(pos);
 }
@@ -38,6 +38,7 @@ void loop()
           
             if(press_button())
             {
+              	delay(100);
                 stanje = 2;
               	break;
             }
@@ -55,6 +56,7 @@ void loop()
 
             if(press_button())
             {
+              	delay(100);
                 stanje = 4;
                 break;
             }
@@ -64,9 +66,10 @@ void loop()
     
     case 3:
         //stop pa desno
-        delay(100);//sacekamo da se smiri debounce
+        //sacekamo da se smiri debounce
       	if(press_button())
             {
+          		delay(100);
                 stanje = 2;
                 break;
             }
@@ -74,9 +77,10 @@ void loop()
       
       case 4:
       //stop pa levo
-        delay(100); //sacekamo da se smiri debounce
+        //delay(100); //sacekamo da se smiri debounce
       	if(press_button())
             {
+          		delay(100);
                 stanje = 1;
                 break;
             }
