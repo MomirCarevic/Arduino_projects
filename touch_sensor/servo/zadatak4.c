@@ -43,16 +43,16 @@ void loop()
             if( press_duration < 500 )
             {
                 stanje = 2;
+              	flag = 0;
                 break;
             }
 
             else
             {
                 stanje = 3;
+              	flag = 0;
                 break;
             }
-
-            flag = 0;
         }
 
         break;
