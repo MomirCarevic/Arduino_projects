@@ -8,7 +8,7 @@
 //se samo jednom udje u if petlju, tako da se belezi samo 
 //prvo vreme pritiska dugmeta
 bool touch_new, touch_old, flag;
-unsigned long time_new, time_old, time_press;
+unsigned long time_new, time_old, time_press, counter;
 unsigned short reaction_time;
 float average_time;
 
