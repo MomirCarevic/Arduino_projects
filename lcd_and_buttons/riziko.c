@@ -10,25 +10,55 @@
 #define DOWN 4
 #define RIGHT 5
 
+#define POCETNO_STANJE 0
 #define BIRANJE_BROJA_KOCKICA 1
 #define BACANJE_KOCKICA 2
 
-// Digital pins used for display
-// 8-RS, 9-E, 4-DB4, 5-DB5, 6-DB6, 7-DB7
-LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
-void setup() {
- // initialize display
- lcd.begin(16, 2);
+int currentState = 0, touch_new = 0, touch_old = 0;
+int kockicaCounter = 0;
 
+LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+
+void setup() {
+    lcd.begin(16, 2);
+  
+  	currentState = POCETNO_STANJE;
 }
 void loop() 
 {
-    switch ()
+    switch (currentState)
     {
-    case /* constant-expression */:
-        /* code */
+    case POCETNO_STANJE:
+        lcd.print("Unesite broj");
+        lcd.setCursor(0,1);
+        lcd.print("kockica:");
+        currentState = BIRANJE_BROJA_KOCKICA;
         break;
-    
+
+    case BIRANJE_BROJA_KOCKICA:
+        
+        touch_new = readButton();
+
+        if( touch_new != touch_old )
+        {
+            if( touch_new == UP && kockicaCounter < 5 )
+            {
+              	lcd.setCursor(9,1);
+                kockicaCounter++;
+                lcd.print(kockicaCounter);
+              	delay(50);
+            }
+            else if ( touch_new == DOWN && kockicaCounter > 1 )
+            {
+              	lcd.setCursor(9,1);
+                kockicaCounter--;
+                lcd.print(kockicaCounter);
+              	delay(50);
+            }
+        }
+
+      	break;
+
     default:
         break;
     }
