@@ -15,11 +15,14 @@
 #define BACANJE_KOCKICA 2
 
 int currentState = 0, touch_new = 0, touch_old = 0;
-int kockicaCounter = 0;
+int kockicaCounter = 0, brojCounter = 0;
 
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
 void setup() {
+
+    Serial.begin(9600);
+
     lcd.begin(16, 2);
   
   	currentState = POCETNO_STANJE;
@@ -55,9 +58,36 @@ void loop()
                 lcd.print(kockicaCounter);
               	delay(50);
             }
+            else if ( touch_new == SELECT )
+            {
+                currentState = BACANJE_KOCKICA;
+              	lcd.clear();
+                break;
+            }
+        }
+      	break;
+    
+    case BACANJE_KOCKICA:
+      	delay(100);
+        
+        for(int i = 0 ; i < kockicaCounter ; i++ )
+        {
+            while (touch_new != SELECT)
+            {
+                lcd.setCursor(0,0);
+                lcd.print(brojCounter);
+                brojCounter++;
+                delay(100);
+				
+              	Serial.print(brojCounter);	
+              
+                if(brojCounter == 6)
+                    brojCounter = 0;
+            }
+            
         }
 
-      	break;
+        break;
 
     default:
         break;
