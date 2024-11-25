@@ -41,8 +41,6 @@ byte tank[8] = {
 void setup() {
     lcd.begin(16, 2);
     lcd.createChar(0,tank);
-
-    Serial.begin(9600);
   
   	currentState = POCETNO_STANJE;
 }
@@ -289,11 +287,10 @@ byte readButton()
 void sort(int arr[], int n)  //implementacija BubbleSort-a
 {   
     
-    for (int i = 0; i < n - 1; i++)  // Loop through all elements
+    for (int i = 0; i < n - 1; i++)  
     {
-        for (int j = 0; j < n - i - 1; j++)  // Loop for adjacent element comparison
+        for (int j = 0; j < n - i - 1; j++) 
         {
-            // Compare adjacent elements and swap if they are in the wrong order (descending)
             if (arr[j] > arr[j + 1])  
             {
                 int temp = arr[j];
@@ -305,9 +302,8 @@ void sort(int arr[], int n)  //implementacija BubbleSort-a
 
     for (int i = 0; i < n; i++) 
     {
-        lcd.setCursor(i, y);  // Display on first row
+        lcd.setCursor(i, y);
         lcd.print(arr[i]);
-        Serial.print(arr[i]);
     }
 
     
