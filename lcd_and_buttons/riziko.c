@@ -13,9 +13,14 @@
 #define POCETNO_STANJE 0
 #define BIRANJE_BROJA_KOCKICA 1
 #define BACANJE_KOCKICA 2
+#define SABERI_REZULTAT 3
+#define SET_SECOND_PLAYER 4
 
 int currentState = 0, touch_new = 0, touch_old = 0;
-int kockicaCounter = 0, brojCounter = 0;
+int kockicaCounter = 0, brojCounter = 0, n=0;
+
+int rezultat[11];
+int player1rez = 0, player2rez = 0, which_player = 0;
 
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
@@ -70,21 +75,45 @@ void loop()
     case BACANJE_KOCKICA:
       	delay(100);
         
+        which_player = 1;
+        
         for(int i = 0 ; i < kockicaCounter ; i++ )
         {
-            while (touch_new != SELECT)
+            do
             {
-                lcd.setCursor(0,0);
+                lcd.setCursor(n,0);
                 lcd.print(brojCounter);
                 brojCounter++;
                 delay(100);
-				
-              	Serial.print(brojCounter);	
-              
+				              
                 if(brojCounter == 6)
                     brojCounter = 0;
-            }
             
+            }while(readButton() != SELECT);
+            
+            rezultat[i] = brojCounter - 1;
+            n++;
+        }
+		
+        if(which_player == 1 )
+        {
+            for (int i = 0 ; i < kockicaCounter + 1 ; i++)
+            {
+              	Serial.println(rezultat[i]);
+                player1rez = player1rez + rezultat[i];
+            }
+          	Serial.print("Rezultat:");
+          	Serial.println(player1rez);
+
+            currentState = SET_SECOND_PLAYER;
+            break;
+        }
+        else if( which_player == 2 )
+        {
+            for (int i = 0 ; i < kockicaCounter ; i++)
+            {
+                player2rez = player2rez + rezultat[i];
+            }
         }
 
         break;
