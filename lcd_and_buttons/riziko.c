@@ -21,7 +21,7 @@ int kockicaCounter = 0, brojCounter = 1, x = 0, y = 0;
 bool flag = 0;
 
 int rezultat[11];
-int player1rez = 0, player2rez = 0, which_player = 1, p1Score, p2Score;
+int which_player = 1, p1Score, p2Score;
 int p1 = 5, p2 = 5;
 
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
