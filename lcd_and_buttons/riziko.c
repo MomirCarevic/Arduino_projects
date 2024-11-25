@@ -18,7 +18,7 @@
 #define RESULTS 5
 
 int currentState = 0, touch_new = 0, touch_old = 0;
-int kockicaCounter = 0, brojCounter = 0, x = 0, y = 0;
+int kockicaCounter = 0, brojCounter = 1, x = 0, y = 0;
 
 int rezultat[11];
 int player1rez = 0, player2rez = 0, which_player = 0, p1Score, p2Score;
@@ -50,7 +50,7 @@ void loop()
 
         if( touch_new != touch_old )
         {
-            if( touch_new == UP && kockicaCounter < 5 )
+            if( touch_new == UP && kockicaCounter < 6 )
             {
               	lcd.setCursor(9,1);
                 kockicaCounter++;
@@ -72,6 +72,7 @@ void loop()
                 break;
             }
         }
+      delay(100);
       	break;
     
     case BACANJE_KOCKICA:
@@ -86,8 +87,8 @@ void loop()
                 brojCounter++;
                 delay(100);
 				              
-                if(brojCounter == 6)
-                    brojCounter = 0;
+                if(brojCounter == 7)
+                    brojCounter = 1;
             
             }while(readButton() != SELECT);
             
@@ -97,20 +98,19 @@ void loop()
 		
         if(which_player == 1 )
         {
-            for (int i = 0 ; i < kockicaCounter + 1 ; i++)
-            {
-                player1rez = player1rez + rezultat[i];
-            }
+            lcd.setCursor(0,0);
+            sort(rezultat,kockicaCounter); //sortiramo niz rezultata od najmanjeg ka najvecem pozivajuci funkciju koja radi BubbleSort
+            int borjParova = pronadjiPara(rezultat,kockicaCounter);//pozivamo funkciju koja prebrojava parove i zanemaruje brojeve koji nemaju para
+            Serial.println(borjParova);
             currentState = SET_SECOND_PLAYER;
             break;
         }
 
         else if( which_player == 2 )
         {
-            for (int i = 0 ; i < kockicaCounter ; i++)
-            {
-                player2rez = player2rez + rezultat[i];
-            }
+            sort(rezultat,kockicaCounter);
+            int borjParova = pronadjiPara(rezultat,kockicaCounter);//pozivamo funkciju koja prebrojava parove i zanemaruje brojeve koji nemaju para
+            Serial.println(borjParova);
             currentState = RESULTS;
             break;
         }
@@ -128,9 +128,8 @@ void loop()
     case RESULTS:
         if ( player1rez > player2rez )
         {
-            p1Score++;
-            lcd.setCursor(13,0);
-            lcd.print(p1Score);
+            lcd.setCursor(8,0);
+            lcd.print("rez");
         }
         else
         {
@@ -162,4 +161,56 @@ byte readButton()
  if (tmp < 5) //RIGHT
  	return RIGHT;
  return 0; //NONE
+}
+
+void sort(int arr[], int n)  //implementacija BubbleSort-a
+{
+    for ( int i = 0 ; i < n ; i++ )
+    {
+        for ( int j = 0 ; j < n - i - 1 ; j++ )
+        {
+            if ( arr[j] > arr[i] + 1 )
+            {
+                int temp = arr[j];
+                arr[j] = arr[j+1];
+                arr[j+1] = temp;
+            }
+        }
+    }
+}
+
+int pronadjiPara(int arr[], int n)
+{
+    int visited[n];
+    int ukupnoParova = 0;
+
+    for ( int i = 0 ; i < n ; i++ )
+    {
+        visited[i] = 0;
+    }
+
+    for( int i = 0 ; i < n ; i++ )
+    {
+        if(visited[i] == 1)
+        {
+            continue;
+        }
+
+        int count = 0;
+        
+        for ( int j = 0 ; j < n ; j++ )
+        {
+            if( arr[i] == arr[j] )
+            {
+                count++;
+                visited[j] = 1;
+            }
+            
+        }
+
+        ukupnoParova += count / 2;
+    }
+
+    return ukupnoParova;
+    
 }
