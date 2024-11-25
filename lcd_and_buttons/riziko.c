@@ -15,12 +15,13 @@
 #define BACANJE_KOCKICA 2
 #define SABERI_REZULTAT 3
 #define SET_SECOND_PLAYER 4
+#define RESULTS 5
 
 int currentState = 0, touch_new = 0, touch_old = 0;
-int kockicaCounter = 0, brojCounter = 0, n=0;
+int kockicaCounter = 0, brojCounter = 0, x = 0, y = 0;
 
 int rezultat[11];
-int player1rez = 0, player2rez = 0, which_player = 0;
+int player1rez = 0, player2rez = 0, which_player = 0, p1Score, p2Score;
 
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
@@ -66,6 +67,7 @@ void loop()
             else if ( touch_new == SELECT )
             {
                 currentState = BACANJE_KOCKICA;
+                which_player = 1;
               	lcd.clear();
                 break;
             }
@@ -73,15 +75,13 @@ void loop()
       	break;
     
     case BACANJE_KOCKICA:
-      	delay(100);
-        
-        which_player = 1;
-        
+      	delay(100); //zakomentarisi ovo kasnije 
+
         for(int i = 0 ; i < kockicaCounter ; i++ )
         {
             do
             {
-                lcd.setCursor(n,0);
+                lcd.setCursor(x,y);
                 lcd.print(brojCounter);
                 brojCounter++;
                 delay(100);
@@ -92,32 +92,54 @@ void loop()
             }while(readButton() != SELECT);
             
             rezultat[i] = brojCounter - 1;
-            n++;
+            x++;
         }
 		
         if(which_player == 1 )
         {
             for (int i = 0 ; i < kockicaCounter + 1 ; i++)
             {
-              	Serial.println(rezultat[i]);
                 player1rez = player1rez + rezultat[i];
             }
-          	Serial.print("Rezultat:");
-          	Serial.println(player1rez);
-
             currentState = SET_SECOND_PLAYER;
             break;
         }
+
         else if( which_player == 2 )
         {
             for (int i = 0 ; i < kockicaCounter ; i++)
             {
                 player2rez = player2rez + rezultat[i];
             }
+            currentState = RESULTS;
+            break;
         }
+        break;
+    
+    case SET_SECOND_PLAYER:
 
+        which_player = 2;
+        x = 0;
+        y = 1;
+
+        currentState = BACANJE_KOCKICA;
         break;
 
+    case RESULTS:
+        if ( player1rez > player2rez )
+        {
+            p1Score++;
+            lcd.setCursor(13,0);
+            lcd.print(p1Score);
+        }
+        else
+        {
+            p2Score++;
+            lcd.setCursor(13,0);
+            lcd.print(p2Score);
+        }
+        
+        break;
     default:
         break;
     }
