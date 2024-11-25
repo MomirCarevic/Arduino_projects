@@ -1,8 +1,3 @@
-// Simple test application that displays pressed button on display
-// every button has its own index that are defined whith macros
-// you can controll backlight (brightness) of LCD with pwm on digital pin 10
-// eg. pinMode(10,OUTPUT); analogWrite(10,255); // range 0-255
-// contrast is set trough blue potentiometer
 #include <LiquidCrystal.h>
 #define SELECT 1
 #define LEFT 2
@@ -14,22 +9,38 @@
 #define BIRANJE_BROJA_KOCKICA 1
 #define BACANJE_KOCKICA 2
 #define SABERI_REZULTAT 3
-#define SET_SECOND_PLAYER 4
-#define RESULTS 5
+#define SET_FIRST_PLAYER 4
+#define SET_SECOND_PLAYER 5
+#define RESULTS 6
+#define WINNER 7
+#define RESET_GAME 8
+
 
 int currentState = 0, touch_new = 0, touch_old = 0;
 int kockicaCounter = 0, brojCounter = 1, x = 0, y = 0;
+bool flag = 0;
 
 int rezultat[11];
-int player1rez = 0, player2rez = 0, which_player = 0, p1Score, p2Score;
+int player1rez = 0, player2rez = 0, which_player = 1, p1Score, p2Score;
+int p1 = 5, p2 = 5;
 
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
+//oblik tenka
+byte tank[8] = {
+    B00000, 
+    B00100, 
+    B11111, 
+    B11111, 
+    B01110, 
+    B01110, 
+    B11111, 
+    B00000  
+};
+
 void setup() {
-
-    Serial.begin(9600);
-
     lcd.begin(16, 2);
+    lcd.createChar(0,tank);
   
   	currentState = POCETNO_STANJE;
 }
@@ -38,6 +49,8 @@ void loop()
     switch (currentState)
     {
     case POCETNO_STANJE:
+        lcd.clear();
+        lcd.setCursor(0,0);
         lcd.print("Unesite broj");
         lcd.setCursor(0,1);
         lcd.print("kockica:");
@@ -64,11 +77,14 @@ void loop()
                 lcd.print(kockicaCounter);
               	delay(50);
             }
-            else if ( touch_new == SELECT )
+            else if ( touch_new == SELECT && kockicaCounter > 0 )
             {
-                currentState = BACANJE_KOCKICA;
-                which_player = 1;
-              	lcd.clear();
+                lcd.clear();
+                if( flag == 0 )
+                    currentState = SET_FIRST_PLAYER;
+                else
+                    currentState = SET_SECOND_PLAYER;
+              	
                 break;
             }
         }
@@ -96,24 +112,51 @@ void loop()
             x++;
         }
 		
-        if(which_player == 1 )
+        if(which_player == 1)
         {
             lcd.setCursor(0,0);
             sort(rezultat,kockicaCounter); //sortiramo niz rezultata od najmanjeg ka najvecem pozivajuci funkciju koja radi BubbleSort
-            int borjParova = pronadjiPara(rezultat,kockicaCounter);//pozivamo funkciju koja prebrojava parove i zanemaruje brojeve koji nemaju para
-            Serial.println(borjParova);
-            currentState = SET_SECOND_PLAYER;
+            p1Score = pronadjiPara(rezultat,kockicaCounter);//pozivamo funkciju koja prebrojava parove i zanemaruje brojeve koji nemaju para
+
+            if ( flag == 0 )
+            {
+                currentState = SET_SECOND_PLAYER;
+                break;
+            }
+            else
+            {
+                currentState = RESULTS;
+                break;
+            }
             break;
         }
 
         else if( which_player == 2 )
         {
             sort(rezultat,kockicaCounter);
-            int borjParova = pronadjiPara(rezultat,kockicaCounter);//pozivamo funkciju koja prebrojava parove i zanemaruje brojeve koji nemaju para
-            Serial.println(borjParova);
-            currentState = RESULTS;
+            p2Score = pronadjiPara(rezultat,kockicaCounter);//pozivamo funkciju koja prebrojava parove i zanemaruje brojeve koji nemaju para
+
+            if ( flag == 1 )
+            {
+                currentState = SET_FIRST_PLAYER;
+                break;
+            }
+            else
+            {
+                currentState = RESULTS;
+                break;
+            }
             break;
         }
+        break;
+
+    case SET_FIRST_PLAYER:
+
+        which_player = 1;
+        x = 0;
+        y = 0;
+
+        currentState = BACANJE_KOCKICA;
         break;
     
     case SET_SECOND_PLAYER:
@@ -121,24 +164,102 @@ void loop()
         which_player = 2;
         x = 0;
         y = 1;
-
         currentState = BACANJE_KOCKICA;
         break;
 
     case RESULTS:
-        if ( player1rez > player2rez )
+        
+        if( p1Score > p2Score )
         {
-            lcd.setCursor(8,0);
-            lcd.print("rez");
+            p2--;
+            lcd.setCursor(kockicaCounter,0);
+            lcd.print("<-WIN");
+        }
+        else if ( p1Score < p2Score )
+        {
+            p1--;
+            lcd.setCursor(kockicaCounter,1);
+            lcd.print("<-WIN");
+        }
+        else if ( p1Score == p2Score )
+        {
+            if( which_player == 2 )
+            {
+                p1--;
+                lcd.setCursor(kockicaCounter,1);
+                lcd.print("<-WIN");
+            }
+            else
+            {
+                p2--;
+                lcd.setCursor(kockicaCounter,0);
+                lcd.print("<-WIN");
+            }
+        }
+
+        
+
+        lcd.setCursor(13,0);lcd.print(p1);
+        lcd.setCursor(14,0);lcd.print("x");
+        lcd.setCursor(15,0);lcd.write(byte(0));
+        
+        lcd.setCursor(13,1);lcd.print(p2);
+        lcd.setCursor(14,1);lcd.print("x");
+        lcd.setCursor(15,1);lcd.write(byte(0));
+        delay(1000);
+
+        if(p1 == 0 || p2 == 0 )
+        {
+            currentState = WINNER;
+            lcd.clear();
+            break;
+        }
+        else if( which_player == 2 )
+        {
+            flag = 1;
+            currentState = BACANJE_KOCKICA;
+            y = 1;
+            setScreen();
+            break;
         }
         else
         {
-            p2Score++;
-            lcd.setCursor(13,0);
-            lcd.print(p2Score);
+            flag = 0;
+            currentState = BACANJE_KOCKICA;
+            y = 0;
+            setScreen();
+            break;
         }
-        
+        currentState = BACANJE_KOCKICA;
         break;
+
+    case WINNER:
+        
+        lcd.setCursor(1,0);
+
+        if(p2 == 0)
+            lcd.print("Player1 is the");
+        else
+            lcd.print("Player2 is the");
+
+        lcd.setCursor(5,1);
+        lcd.print("WINNER");
+        
+
+        if(readButton() == SELECT)
+        {
+            currentState = RESET_GAME;
+            break;
+        }
+        break;
+
+    case RESET_GAME:
+        p1 = 5;
+        p2 = 5;
+        kockicaCounter = 0;
+        currentState = POCETNO_STANJE;
+        break;
+
     default:
         break;
     }
@@ -213,4 +334,17 @@ int pronadjiPara(int arr[], int n)
 
     return ukupnoParova;
     
+}
+
+void setScreen()
+{
+    
+    for ( int j = 0 ; j < 2 ; j++ )
+    {
+        for(int i = 0 ; i < 12 ; i++)
+        {
+            lcd.setCursor(i,j);lcd.print(" ");
+        }
+    }
+    x = 0;
 }
